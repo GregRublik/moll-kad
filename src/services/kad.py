@@ -1,4 +1,5 @@
 from aiohttp import ClientSession
+from config import settings
 
 class KadService:
 
@@ -6,26 +7,30 @@ class KadService:
 
     def __init__(self, session: ClientSession):
         self.session = session
+        self.token = settings.kad.api_key
 
 
-    async def search_case(self, num_deal: str, token: str):
+    async def search_case(self, num_deal: str):
         result = await self.session.get(
             self.base_url,
             params={
                 "type": "search",
                 "CaseNumber": num_deal,
-                "token": token
+                "token": self.token
             }
         )
+        if result.status == 200:
+            result = await result.json()
+            return result["Result"]
+        else:
+            return await result.json()
 
-        return await result.json()
-
-    async def get_case_info(self, id_deal: str, token: str):
+    async def get_case_info(self, id_deal: str):
         result = await self.session.get(
             self.base_url,
             params={
                 "type": "caseInfo",
-                "token": token,
+                "token": self.token,
                 "CaseId": id_deal,
 
             },
