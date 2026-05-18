@@ -31,11 +31,11 @@ async def main(
             session
         )
         csv_service = CsvService()
-        cases = await service.search_case(num_deal, settings.kad.api_key)
+        cases = await service.search_case(num_deal)
         csv_service.save_results(num_deal, "search", cases.get("Result"))
 
         for case in cases.get("Result"):
-            case_info = await service.get_case_info(case.get("caseId"), settings.kad.api_key)
+            case_info = await service.get_case_info(case.get("caseId"))
             results = normalize_results(case_info.get("Result"))
             csv_service.save_results(num_deal, "info", results)
 
