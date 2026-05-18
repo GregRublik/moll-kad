@@ -35,5 +35,8 @@ class KadService:
 
             },
         )
-
-        return await result.json()
+        if result.status == 200:
+            result = await result.json()
+            return result["Result"]
+        else:
+            return await result.json()

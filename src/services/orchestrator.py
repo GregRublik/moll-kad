@@ -24,6 +24,7 @@ class OrchestratorService:
     async def process_single_client(self, client):
         kad_info_client = await self.get_kad_info_for_client(client) # получаем ЗАКЭШИРОВАН ЛИ ОН И ДАННЫЕ КЭША, ЛИБО search_person
 
+        #todo create deal_kad_to bitrix with kad_info_client
     async def get_kad_info_for_client(self, client):
         search_results = await self.kad_service.search_case(client.get("UF_CRM_FEDRESURS_IP"))
 
