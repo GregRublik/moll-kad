@@ -1,11 +1,12 @@
 from services.orchestrator import OrchestratorService
 from asyncio import run
 from utils.session_manager import SessionManager
+from aiohttp import ClientSession
 
 
 
 async def main(cnt):
-    session = await SessionManager.get_session()
+    session: ClientSession = await SessionManager.get_session()
     try:
         orchestrator = OrchestratorService(session)
         await orchestrator.process_clients(cnt)

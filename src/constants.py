@@ -8,3 +8,14 @@ class BitrixContactConstants:
     fedresurs_found = "UF_CRM_1777451201"                           # Был ли найден контакт при поиске на федресурсе
     fedresurs_found_status_yes = 2613
     fedresurs_found_status_no = 2614
+
+class BitrixKadConstants:
+    entity_type_id = 1188
+
+    participants = "ufCrm163_1779704989"
+    court = "ufCrm163_1779706946349"
+    status = "ufCrm163_1779707116379"
+    link_deal = "ufCrm163_1779707383408"
+
+    events = "ufCrm163_1779713680"
+

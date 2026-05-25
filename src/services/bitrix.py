@@ -2,7 +2,7 @@ from aiohttp import ClientSession
 from typing import Literal, Optional
 
 from config import settings
-from constants import BitrixContactConstants
+from constants import BitrixContactConstants, BitrixKadConstants
 from utils.session_manager import SessionManager
 
 
@@ -10,7 +10,7 @@ class BitrixService:
 
     def __init__(
             self,
-            http_session: ClientSession = SessionManager.get_session(),
+            http_session: ClientSession,
     ):
         self.http_session = http_session
 
@@ -38,6 +38,28 @@ class BitrixService:
             json=json
         )
         return await response.json()
+
+
+class BitrixKadService(BitrixService):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields = BitrixKadConstants()
+
+    async def create_one(
+        self, fields: dict
+    ):
+
+        response = await self.send_request(
+            "crm.item.add",
+            json={
+                "entityTypeId": self.fields.entity_type_id,
+                "fields": fields,
+                "useOriginalUfNames": "N"
+            }
+        )
+        return response
+
 
 class BitrixContactService(BitrixService):
 
