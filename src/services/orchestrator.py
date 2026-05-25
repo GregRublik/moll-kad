@@ -1,5 +1,5 @@
 from aiohttp import ClientSession
-from services.bitrix import BitrixContactService, BitrixKadService
+from services.bitrix import BitrixContactService, BitrixKadService, BitrixKadEventsService
 from services.kad import KadService
 
 class OrchestratorService:
@@ -13,6 +13,7 @@ class OrchestratorService:
         self.contact_service: BitrixContactService = BitrixContactService(session)
         self.bitrix_kad_service: BitrixKadService = BitrixKadService(session)
         self.kad_service: KadService = KadService(session)
+        self.bitrix_kad_events_service = BitrixKadEventsService(session)
 
     async def process_clients(self, count: int):
         """Процесс поиска информации о клиентах на федресурсе"""
@@ -55,22 +56,24 @@ class OrchestratorService:
                 judges.append(judge.get("Name"))
 
             for event in deal.get("InstanceEvents", []):
-                # todo нужна ли эта инфа
-                    # "Date": "03.05.2024", # Дата
-                    # "PublishDate": "05.09.2025, 10:19:23", # Дата публикации(в формате d.m.Y, H: i:s)
-                    # "Declarers": None, # Заявитель
-                    # "DeclarerInn": None, # ИНН заявителя
-                    # "ClaimSum": 0 # Сумма претензии
                 data_event = {
-                    "Событие": event.get("EventTypeName"),
-                    "ID": event.get("EventTypeId"),
-                    "Дата и время судебного заседания": event.get("AdditionalInfo"),
-                    "Описание": event.get("ContentTypes"),
-                    "ссылка на файл": event.get("File"),
-                    "Комментарий": event.get("Comment"),
-
+                    "title": f'{case_info.get("CaseNumber")} {event.get("EventTypeName")}',
+                    self.bitrix_kad_events_service.fields.opportunity: event.get("ClaimSum", ""),
+                    self.bitrix_kad_events_service.fields.element_id: event.get("EventTypeId", ""),
+                    self.bitrix_kad_events_service.fields.court_date: event.get("AdditionalInfo", ""),
+                    self.bitrix_kad_events_service.fields.description: event.get("ContentTypes", ""),
+                    self.bitrix_kad_events_service.fields.link_file: event.get("File", ""),
+                    self.bitrix_kad_events_service.fields.comment: event.get("Comment", ""),
+                    self.bitrix_kad_events_service.fields.date: event.get("Date", ""),
+                    self.bitrix_kad_events_service.fields.date_publish_event: event.get("PublishDate", ""),
+                    self.bitrix_kad_events_service.fields.declarers: event.get("Declarers", ""),
+                    self.bitrix_kad_events_service.fields.inn_declarers: event.get("DeclarerInn", ""),
                 }
-                events.append(str(data_event))
+                event = await self.bitrix_kad_events_service.create_one(data_event)
+                # print(event)
+                print(data_event)
+                # events.append(str(data_event))
+                break
 
 
         card_deal = {
@@ -79,7 +82,7 @@ class OrchestratorService:
             self.bitrix_kad_service.fields.status: case_info.get("State"), # либо "finish": "false", // Законченное дело true / false
             self.bitrix_kad_service.fields.participants: participants_normalize,#[f"{participant.}" for participant in participants], #
             self.bitrix_kad_service.fields.link_deal: f"https://kad.arbitr.ru/Card/{case_info.get('CaseId')}",
-            self.bitrix_kad_service.fields.events: events,
+            # self.bitrix_kad_service.fields.events: events,
         }
 
         return await self.bitrix_kad_service.create_one(

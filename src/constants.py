@@ -19,3 +19,18 @@ class BitrixKadConstants:
 
     events = "ufCrm163_1779713680"
 
+class BitrixKadEventsConstants:
+    entity_type_id = 1192
+
+    opportunity = "opportunity" # "opportunity"
+
+    element_id = "ufCrm164_1779717132095" # id события
+    court_date = "ufCrm164_1779717175544" # дата судебного заседания
+    description = "ufCrm164_1779717243"
+    link_file = "ufCrm164_1779717339912"
+    comment = "ufCrm164_1779717409427"
+    date_publish_event = "ufCrm164_1779717435628"
+    date = "ufCrm164_1779717471761"
+    declarers = "ufCrm164_1779717632828" # заявитель
+    inn_declarers = "ufCrm164_1779717649027"
+

@@ -2,7 +2,7 @@ from aiohttp import ClientSession
 from typing import Literal, Optional
 
 from config import settings
-from constants import BitrixContactConstants, BitrixKadConstants
+from constants import BitrixContactConstants, BitrixKadConstants, BitrixKadEventsConstants
 from utils.session_manager import SessionManager
 
 
@@ -60,6 +60,10 @@ class BitrixKadService(BitrixService):
         )
         return response
 
+class BitrixKadEventsService(BitrixKadService):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields = BitrixKadEventsConstants()
 
 class BitrixContactService(BitrixService):
 
