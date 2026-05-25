@@ -23,6 +23,7 @@ class OrchestratorService:
             await self.process_single_client(client)
 
     async def process_single_client(self, client):
+        print(client)
         kad_info_client = await self.get_kad_info_for_client(client) # получаем ЗАКЭШИРОВАН ЛИ ОН И ДАННЫЕ КЭША, ЛИБО search_person
         # todo create deal_kad_to bitrix with kad_info_client
 
@@ -50,14 +51,31 @@ class OrchestratorService:
         judges = []
         events = []
 
+        card_deal = {
+            "title": case_info.get("CaseNumber"),
+            "contactId": client.get("ID"),
+            self.bitrix_kad_service.fields.court: list(set(courts)), # он у каждого дела свой, может не совпадать в теории
+            self.bitrix_kad_service.fields.status: case_info.get("State"), # либо "finish": "false", // Законченное дело true / false
+            self.bitrix_kad_service.fields.participants: participants_normalize,#[f"{participant.}" for participant in participants], #
+            self.bitrix_kad_service.fields.link_deal: f"https://kad.arbitr.ru/Card/{case_info.get('CaseId')}",
+        }
+
+        kad_bitrix = await self.bitrix_kad_service.create_one(
+            card_deal,
+        )
+
         for deal in case_instances:
             courts.append(deal.get("Court", {}).get("Name"))
             for judge in deal.get("Judges", []):
                 judges.append(judge.get("Name"))
 
+            a = 0
+
             for event in deal.get("InstanceEvents", []):
                 data_event = {
                     "title": f'{case_info.get("CaseNumber")} {event.get("EventTypeName")}',
+                    "contactId": client.get("ID"),
+                    f"parentId{self.bitrix_kad_service.fields.entity_type_id}": kad_bitrix.get("result", {}).get("item", {}).get("id"),
                     self.bitrix_kad_events_service.fields.opportunity: event.get("ClaimSum", ""),
                     self.bitrix_kad_events_service.fields.element_id: event.get("EventTypeId", ""),
                     self.bitrix_kad_events_service.fields.court_date: event.get("AdditionalInfo", ""),
@@ -69,25 +87,13 @@ class OrchestratorService:
                     self.bitrix_kad_events_service.fields.declarers: event.get("Declarers", ""),
                     self.bitrix_kad_events_service.fields.inn_declarers: event.get("DeclarerInn", ""),
                 }
-                event = await self.bitrix_kad_events_service.create_one(data_event) # todo надо добавить связи между элементами и контактом
-                # fields = await self.bitrix_kad_events_service.get_fields()
+                event = await self.bitrix_kad_events_service.create_one(data_event) # todo надо добавить связи между контактом
                 # print(event)
                 # print(fields)
                 # events.append(str(data_event))
-                break
-
-
-        card_deal = {
-            "title": case_info.get("CaseNumber"),
-            self.bitrix_kad_service.fields.court: list(set(courts)), # он у каждого дела свой, может не совпадать в теории
-            self.bitrix_kad_service.fields.status: case_info.get("State"), # либо "finish": "false", // Законченное дело true / false
-            self.bitrix_kad_service.fields.participants: participants_normalize,#[f"{participant.}" for participant in participants], #
-            self.bitrix_kad_service.fields.link_deal: f"https://kad.arbitr.ru/Card/{case_info.get('CaseId')}",
-        }
-
-        return await self.bitrix_kad_service.create_one(
-            card_deal,
-        )
+                a += 1
+                if a == 2:
+                    break
 
     async def get_kad_info_for_client(self, client):
         search_results = await self.kad_service.search_case(client.get("UF_CRM_FEDRESURS_IP"))
