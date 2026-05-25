@@ -1,4 +1,8 @@
+class BitrixFieldsConstants:
+    entity_type_id: int
+
 class BitrixContactConstants:
+    entity_type_id = 3
     date_updated_fedresurs = "UF_CRM_FEDRESURS_CHECKUP_DATETIME"    # дата обновления федресурс
 
     bankruptcy_case_number = "UF_CRM_FEDRESURS_IP"                  # Номер дела о банкротстве
@@ -17,7 +21,7 @@ class BitrixKadConstants:
     status = "ufCrm163_1779707116379"
     link_deal = "ufCrm163_1779707383408"
 
-    events = "ufCrm163_1779713680"
+    # events = "ufCrm163_1779713680" # удалил поле
 
 class BitrixKadEventsConstants:
     entity_type_id = 1192

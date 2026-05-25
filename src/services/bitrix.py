@@ -2,8 +2,7 @@ from aiohttp import ClientSession
 from typing import Literal, Optional
 
 from config import settings
-from constants import BitrixContactConstants, BitrixKadConstants, BitrixKadEventsConstants
-from utils.session_manager import SessionManager
+from constants import BitrixContactConstants, BitrixKadConstants, BitrixKadEventsConstants, BitrixFieldsConstants
 
 
 class BitrixService:
@@ -11,8 +10,10 @@ class BitrixService:
     def __init__(
             self,
             http_session: ClientSession,
+            fields
     ):
         self.http_session = http_session
+        self.fields = fields
 
     async def _request(self, method, url, params, json):
         return await self.http_session.request(
@@ -39,12 +40,23 @@ class BitrixService:
         )
         return await response.json()
 
+    async def get_fields(self):
+        response = await self.send_request(
+            "crm.item.fields",
+            json={
+                "entityTypeId": self.fields.entity_type_id
+            }
+        )
+        return response
+
 
 class BitrixKadService(BitrixService):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields = BitrixKadConstants()
+    def __init__(self, http_session: ClientSession):
+        super().__init__(
+            http_session=http_session,
+            fields=BitrixKadConstants
+        )
 
     async def create_one(
         self, fields: dict
@@ -60,25 +72,37 @@ class BitrixKadService(BitrixService):
         )
         return response
 
-class BitrixKadEventsService(BitrixKadService):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields = BitrixKadEventsConstants()
 
-class BitrixContactService(BitrixService):
+class BitrixKadEventsService(BitrixService):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields = BitrixContactConstants()
+    def __init__(self, http_session: ClientSession):
+        super().__init__(
+            http_session=http_session,
+            fields=BitrixKadEventsConstants
+        )
 
-    async def get_fields(self):
+    async def create_one(
+        self, fields: dict
+    ):
+
         response = await self.send_request(
-            "crm.item.fields",
+            "crm.item.add",
             json={
-                "entityTypeId": 3
+                "entityTypeId": self.fields.entity_type_id,
+                "fields": fields,
+                "useOriginalUfNames": "N"
             }
         )
         return response
+
+
+class BitrixContactService(BitrixService):
+
+    def __init__(self, http_session: ClientSession):
+        super().__init__(
+            http_session=http_session,
+            fields=BitrixContactConstants
+        )
 
     async def get_contacts(self, start: Optional[int] = 0):
         response = await self.send_request(

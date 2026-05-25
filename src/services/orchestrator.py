@@ -69,9 +69,10 @@ class OrchestratorService:
                     self.bitrix_kad_events_service.fields.declarers: event.get("Declarers", ""),
                     self.bitrix_kad_events_service.fields.inn_declarers: event.get("DeclarerInn", ""),
                 }
-                event = await self.bitrix_kad_events_service.create_one(data_event)
+                event = await self.bitrix_kad_events_service.create_one(data_event) # todo надо добавить связи между элементами и контактом
+                # fields = await self.bitrix_kad_events_service.get_fields()
                 # print(event)
-                print(data_event)
+                # print(fields)
                 # events.append(str(data_event))
                 break
 
@@ -82,7 +83,6 @@ class OrchestratorService:
             self.bitrix_kad_service.fields.status: case_info.get("State"), # либо "finish": "false", // Законченное дело true / false
             self.bitrix_kad_service.fields.participants: participants_normalize,#[f"{participant.}" for participant in participants], #
             self.bitrix_kad_service.fields.link_deal: f"https://kad.arbitr.ru/Card/{case_info.get('CaseId')}",
-            # self.bitrix_kad_service.fields.events: events,
         }
 
         return await self.bitrix_kad_service.create_one(
