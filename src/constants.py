@@ -16,6 +16,7 @@ class BitrixContactConstants:
 class BitrixKadConstants:
     entity_type_id = 1188
 
+    element_id = "ufCrm163_1779869360595" # id дела
     participants = "ufCrm163_1779704989"
     court = "ufCrm163_1779706946349"
     status = "ufCrm163_1779707116379"

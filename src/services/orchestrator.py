@@ -23,9 +23,7 @@ class OrchestratorService:
             await self.process_single_client(client)
 
     async def process_single_client(self, client):
-        print(client)
         kad_info_client = await self.get_kad_info_for_client(client) # получаем ЗАКЭШИРОВАН ЛИ ОН И ДАННЫЕ КЭША, ЛИБО search_person
-        # todo create deal_kad_to bitrix with kad_info_client
 
         case_info = kad_info_client.get("CaseInfo", {})
         participants = kad_info_client.get("Participants", {})
@@ -54,15 +52,21 @@ class OrchestratorService:
         card_deal = {
             "title": case_info.get("CaseNumber"),
             "contactId": client.get("ID"),
+            self.bitrix_kad_service.fields.element_id: case_info.get("CaseId"),
             self.bitrix_kad_service.fields.court: list(set(courts)), # он у каждого дела свой, может не совпадать в теории
             self.bitrix_kad_service.fields.status: case_info.get("State"), # либо "finish": "false", // Законченное дело true / false
             self.bitrix_kad_service.fields.participants: participants_normalize,#[f"{participant.}" for participant in participants], #
             self.bitrix_kad_service.fields.link_deal: f"https://kad.arbitr.ru/Card/{case_info.get('CaseId')}",
         }
 
-        kad_bitrix = await self.bitrix_kad_service.create_one(
-            card_deal,
-        )
+        # Также ищем в битре, если находим то не создаем новую
+        kad_bitrix = await self.bitrix_kad_service.find_by_element_id(case_info.get("CaseId"))
+        if len(kad_bitrix.get("result", {}).get("items", [])) == 0:
+            kad_bitrix = await self.bitrix_kad_service.create_one(
+                card_deal,
+            )
+        else:
+            print(f"Дело найдено в bitrix: {kad_bitrix.get('result', {}).get('items', [])}")
 
         for deal in case_instances:
             courts.append(deal.get("Court", {}).get("Name"))
@@ -87,10 +91,12 @@ class OrchestratorService:
                     self.bitrix_kad_events_service.fields.declarers: event.get("Declarers", ""),
                     self.bitrix_kad_events_service.fields.inn_declarers: event.get("DeclarerInn", ""),
                 }
-                event = await self.bitrix_kad_events_service.create_one(data_event) # todo надо добавить связи между контактом
-                # print(event)
-                # print(fields)
-                # events.append(str(data_event))
+                # todo надо доработать таким образом чтобы поиск проходил сразу по всем ids а не по одному для оптимизации
+                event_bitrix = await self.bitrix_kad_events_service.find_by_element_id(event.get("EventTypeId", None))
+                if len(event_bitrix.get("result", {}).get("items", [])) == 0: # создаем элемент только если нет с таким же id
+                    event = await self.bitrix_kad_events_service.create_one(data_event)
+                else:
+                    print(f"Событие найдено в bitrix: {event_bitrix.get("result", {}).get("items", [])}")
                 a += 1
                 if a == 2:
                     break
@@ -108,4 +114,3 @@ class OrchestratorService:
             kad_info_client = await self.kad_service.get_case_info(case_id)
 
         return kad_info_client
-

@@ -72,6 +72,22 @@ class BitrixKadService(BitrixService):
         )
         return response
 
+    async def find_by_element_id(
+            self, element_id: int
+    ):
+        response = await self.send_request(
+            "crm.item.list",
+            json={
+                "entityTypeId": self.fields.entity_type_id,
+                "select": ["ID", self.fields.element_id],
+                "filter": {
+                    self.fields.element_id: element_id
+                },
+                "useOriginalUfNames": "N"
+            }
+        )
+        return response
+
 
 class BitrixKadEventsService(BitrixService):
 
@@ -90,6 +106,22 @@ class BitrixKadEventsService(BitrixService):
             json={
                 "entityTypeId": self.fields.entity_type_id,
                 "fields": fields,
+                "useOriginalUfNames": "N"
+            }
+        )
+        return response
+
+    async def find_by_element_id(
+            self, element_id: int
+    ):
+        response = await self.send_request(
+            "crm.item.list",
+            json={
+                "entityTypeId": self.fields.entity_type_id,
+                "select": ["ID", self.fields.element_id],
+                "filter": {
+                    self.fields.element_id: element_id
+                },
                 "useOriginalUfNames": "N"
             }
         )

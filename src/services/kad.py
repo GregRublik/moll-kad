@@ -19,11 +19,15 @@ class KadService:
                 "token": self.token
             }
         )
-        if result.status == 200:
-            result = await result.json()
-            return result["Result"]
-        else:
-            return await result.json()
+        try:
+            if result.status == 200:
+                result = await result.json()
+                return result["Result"]
+            else:
+                return await result.json()
+        except KeyError:
+            print(result)
+            raise
 
     async def get_case_info(self, id_deal: str):
         result = await self.session.get(
