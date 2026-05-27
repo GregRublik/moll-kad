@@ -154,6 +154,7 @@ class BitrixContactService(BitrixService):
                 ],
                 "filter": {
                     "ID": "15151",
+                    f"!={self.fields.bankruptcy_case_number}": ""
                     # self.fields.fedresurs_monitoring: "1", # мониторинг в федресурсе
                     # f"={self.fields.fedresurs_found}": "", # Только необработанные ранее
                     # "!=NAME": "",               # только с заполненными колями
