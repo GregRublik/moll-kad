@@ -1,5 +1,6 @@
 from aiohttp import ClientSession
 from typing import Literal, Optional
+from datetime import datetime, timezone, timedelta
 
 from config import settings
 from constants import BitrixContactConstants, BitrixKadConstants, BitrixKadEventsConstants, BitrixFieldsConstants
@@ -136,6 +137,25 @@ class BitrixContactService(BitrixService):
             fields=BitrixContactConstants
         )
 
+    async def update_date_updated_kad(
+            self, contact_id: int
+    ):
+        tz = timezone(timedelta(hours=3))
+        now = datetime.now(tz)
+
+        response = await self.send_request(
+            "crm.item.update",
+            json={
+                "entityTypeId": self.fields.entity_type_id,
+                "id": contact_id,
+                "fields": {
+                    self.fields.date_updated_kad: now.replace().isoformat(),
+                },
+                "useOriginalUfNames": "N"
+            }
+        )
+        return response
+
     async def get_contacts(self, start: Optional[int] = 0):
         response = await self.send_request(
             "crm.contact.list",
@@ -163,7 +183,7 @@ class BitrixContactService(BitrixService):
                     # "!=BIRTHDATE": ""           # только с заполненными колями
                 },
                 "order": {
-                    # self.fields.date_updated_fedresurs: "ASC",  # "ASC", "DESC"
+                    self.fields.date_updated_kad: "ASC",  # "ASC", "DESC"
                     # "BIRTHDATE": "DESC"
                 },
                 "start": start

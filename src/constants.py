@@ -8,6 +8,7 @@ class BitrixContactConstants:
     bankruptcy_case_number = "UF_CRM_FEDRESURS_IP"                  # Номер дела о банкротстве
     inn = "UF_CRM_1636582822241"
     fedresurs_monitoring = "UF_CRM_FEDRESURS_MONITORING"            # Отслеживаем ли через федресурс
+    date_updated_kad = "ufCrm_1779899494898"
 
     fedresurs_found = "UF_CRM_1777451201"                           # Был ли найден контакт при поиске на федресурсе
     fedresurs_found_status_yes = 2613

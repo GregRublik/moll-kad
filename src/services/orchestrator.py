@@ -100,6 +100,7 @@ class OrchestratorService:
                 a += 1
                 if a == 2:
                     break
+        await self.contact_service.update_date_updated_kad(client.get("ID")) # устанавливаем время последнего обновления
 
     async def get_kad_info_for_client(self, client):
         search_results = await self.kad_service.search_case(client.get("UF_CRM_FEDRESURS_IP"))
