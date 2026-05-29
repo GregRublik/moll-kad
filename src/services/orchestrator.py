@@ -19,10 +19,16 @@ class OrchestratorService:
         """Процесс поиска информации о клиентах на федресурсе"""
         clients = await self.contact_service.get_contacts()
 
-        for client in clients[:count]:
-            await self.process_single_client(client)
+        count_contacts_processed = 0
 
-    async def process_single_client(self, client):
+        for client in clients:
+            if await self.process_single_client(client, count):
+                count_contacts_processed += 1
+            if count_contacts_processed >= count:
+                print(f"обработано (по которым создана запись): {count_contacts_processed} контактов")
+
+
+    async def process_single_client(self, client, count: int) -> bool:
         kad_info_client = await self.get_kad_info_for_client(client) # получаем ЗАКЭШИРОВАН ЛИ ОН И ДАННЫЕ КЭША, ЛИБО search_person
 
         case_info = kad_info_client.get("CaseInfo", {})
@@ -65,8 +71,10 @@ class OrchestratorService:
             kad_bitrix = await self.bitrix_kad_service.create_one(
                 card_deal,
             )
+            this_contact_update = True
         else:
             print(f"Дело найдено в bitrix: {kad_bitrix.get('result', {}).get('items', [])}")
+            this_contact_update = False
 
         for deal in case_instances:
             courts.append(deal.get("Court", {}).get("Name"))
@@ -101,6 +109,8 @@ class OrchestratorService:
                 if a == 2:
                     break
         await self.contact_service.update_date_updated_kad(client.get("ID")) # устанавливаем время последнего обновления
+        return this_contact_update
+
 
     async def get_kad_info_for_client(self, client):
         search_results = await self.kad_service.search_case(client.get("UF_CRM_FEDRESURS_IP"))
